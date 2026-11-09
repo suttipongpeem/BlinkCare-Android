@@ -1,0 +1,40 @@
+
+name: Build BlinkCare Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "BlinkCare_Android_Starter_Download.zip"
+      - ".github/workflows/android-build.yml"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Extract project
+        run: |
+          unzip -o BlinkCare_Android_Starter_Download.zip
+          test -f BlinkCare_Android_Native/settings.gradle.kts
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.9"
+
+      - name: Build APK
+        working-directory: BlinkCare_Android_Native
+        run: gradle :app:assembleDebug
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: BlinkCare-debug-apk
+          path: BlinkCare_Android_Native/app/build/outputs/apk/debug/app-debug.apk
